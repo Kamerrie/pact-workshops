@@ -51,9 +51,11 @@ jobs:
         run: |
           cd Provider/src && dotnet run & pid=$! && sleep 10
           cd Provider/tests && dotnet test
+          killall provider
         working-directory: ${{ env.workshop-directory }}CompletedSolution
       - name: Completed Solution - Run E2E
         run: |
           cd Provider/src && dotnet run & pid=$! && sleep 10
           cd Consumer/src && dotnet run
+          killall provider
         working-directory: ${{ env.workshop-directory }}CompletedSolution
