@@ -47,10 +47,11 @@ jobs:
         run: |
           cd Provider/src && dotnet run & pid=$! && sleep 10
           cd Consumer/src && dotnet run
-          killall provider
+          echo $pid
+          kill $pid || true
+          killall provider || true
         continue-on-error: true
         working-directory: ${{ env.workshop-directory }}
-
 
       - name: Step 3 - Run Pact Consumer Tests
         run: dotnet test
