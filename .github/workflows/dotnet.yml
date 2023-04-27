@@ -96,7 +96,7 @@ jobs:
 
       - name: Step 6 - Run Pact Consumer Tests
         run: dotnet test
-        working-directory: Consumer
+        working-directory: ${{ env.workshop-directory }}Consumer
 
       - name: Step 6 - Run Pact Provider Tests
         run: dotnet test
