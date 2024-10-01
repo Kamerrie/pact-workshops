@@ -37,8 +37,8 @@ namespace Consumer
                 try
                 {
                     // client.DefaultRequestHeaders.Add("Authorization", AuthorizationHeaderValue()); // STEP_8
-                    var response = await client.GetAsync($"/api/product/{id}"); // STEP_1 - STEP_4
-                    // var response = await client.GetAsync($"/api/products/{id}"); // STEP_5
+                    // var response = await client.GetAsync($"/api/product/{id}"); // STEP_1 - STEP_4
+                    var response = await client.GetAsync($"/api/products/{id}"); // STEP_5
                     return response;
                 }
                 catch (Exception ex)
