@@ -17,7 +17,7 @@ namespace tests
     {
         private IPactBuilderV3 pact;
         private readonly ApiClient ApiClient;
-        private readonly int port = 9000;
+        private readonly int port = 9009;
         private readonly List<object> products;
 
         public ApiTest(ITestOutputHelper output)
@@ -30,7 +30,7 @@ namespace tests
 
             var Config = new PactConfig
             {
-                PactDir = Path.Join("..", "..", "..", "..", "..", "pacts"),
+                PactDir = Path.Join("..", "..", "..", "pacts"),
                 Outputters = new[] { new XUnitOutput(output) },
                 DefaultJsonSettings = new JsonSerializerSettings
                 {
@@ -39,8 +39,8 @@ namespace tests
                 LogLevel = PactLogLevel.Debug // STEP_8
             };
 
-            pact = Pact.V3("ApiClient", "ProductService", Config).WithHttpInteractions(port);
-            ApiClient = new ApiClient(new System.Uri($"http://localhost:{port}"));
+            pact = Pact.V3("ApiClient", "ProductService", Config).WithHttpInteractions();
+            //ApiClient = new ApiClient(new System.Uri($"http://localhost"));
         }
 
         [Fact]
@@ -50,17 +50,29 @@ namespace tests
             pact.UponReceiving("A valid request for all products")
                     .Given("products exist")
                     .WithRequest(HttpMethod.Get, "/api/products")
-                    // .WithHeader("Authorization", Match.Regex("Bearer 2019-01-14T11:34:18.045Z", "Bearer \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")) // STEP_8
+                // .WithHeader("Authorization", Match.Regex("Bearer 2019-01-14T11:34:18.045Z", "Bearer \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")) // STEP_8
                 .WillRespond()
                     .WithStatus(HttpStatusCode.OK)
                     .WithHeader("Content-Type", "application/json; charset=utf-8")
                     .WithJsonBody(new TypeMatcher(products));
 
             // Act
+            /*
             await pact.VerifyAsync(async ctx => {
                 var response = await ApiClient.GetAllProducts();
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             });
+            */
+            await pact.VerifyAsync(async ctx =>
+            {
+                // Act
+                var client = new ApiClient(ctx.MockServerUri);
+                var response = await client.GetAllProducts();
+
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            });
+            
         }
 
         [Fact]
@@ -69,21 +81,22 @@ namespace tests
             // Arrange
             pact.UponReceiving("A valid request for a product")
                     .Given("product with ID 10 exists")
-                    .WithRequest(HttpMethod.Get, "/api/product/10") // STEP_1 - STEP_4
-                    // .WithRequest(HttpMethod.Get, "/api/products/10") // STEP_5
-                    // .WithHeader("Authorization", Match.Regex("Bearer 2019-01-14T11:34:18.045Z", "Bearer \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")) // STEP_8
+                    //.WithRequest(HttpMethod.Get, "/api/product/10") // STEP_1 - STEP_4
+                    .WithRequest(HttpMethod.Get, "/api/products/10") // STEP_5
+                                                                     // .WithHeader("Authorization", Match.Regex("Bearer 2019-01-14T11:34:18.045Z", "Bearer \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")) // STEP_8
                 .WillRespond()
                     .WithStatus(HttpStatusCode.OK)
                     .WithHeader("Content-Type", "application/json; charset=utf-8")
                     .WithJsonBody(new TypeMatcher(products[1]));
 
             await pact.VerifyAsync(async ctx => {
-                var response = await ApiClient.GetProduct(10);
+                var client = new ApiClient(ctx.MockServerUri);
+                var response = await client.GetProduct(10);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             });
         }
 
-        
+
         // // STEP_6
         // [Fact]
         // public async Task NoProductsExist()

@@ -25,4 +25,8 @@
     <ProjectReference Include="..\src\consumer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="pacts\" />
+  </ItemGroup>
+
 </Project>
